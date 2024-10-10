@@ -1,67 +1,48 @@
 #include "ft_ping.h"
 
-
-int CheckValidOpt(char **argv, Ping_Info *ping_info)
+void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info)
 {
-    int i = 0;
+    int exit_code = 69;
 
-    while (argv[i])
-    {    
-        int j = 0;
-        while (argv[i][j])
-        {
-            if (argv[i][j] != 'v' || argv[i][j] != '?')
-            {
-                printf("%s%c\n\n%s", BAD_OPT_ERROR, argv[i][j], HELP_MSG)
-                exit(0);
-            }
-        }
-    }
-}
-
-
-void    CheckHelpOpt(char **argv){
-    int i = 0;
-
-    while (argv[i])
+    if (strcmp(type, "BAD_OPT_ERROR") == 0)
     {
-        if (argv[i][0] == "-")
-        {
-            int j = 0;
-            while (argv[i][j])
-            {
-                if (argv[i][j] == "?")
-                {
-                    printf(HELP_MSG);
-                    exit(0);
-                }
-            }
-            j++;
-        }
-        i++;
+        printf("ping: invalid option -- %c\n\n%s\n", info_char, HELP_MSG);
+        exit_code = 2;
     }
+
+    else if (strcmp(type, "BAD_IP_ERROR") == 0)
+    {
+        printf("ping: %s: Name or service not known\n", info_str);
+        exit_code = 2;
+    }
+
+    else if (strcmp(type, "NO_ARGUMENTS_ERROR") == 0)
+    {
+        printf("ping: usage error: Destination address required\n");
+        exit_code = 1;
+    }
+
+    Destroy(ping_info);
+    exit(exit_code);
 }
 
-
-void    CheckArguments(int argc,char **argv)
+void    Init(PingInfo *ping_info)
 {
-    Ping_Info   *ping_info = malloc(sizeof(Ping_Info));
-    int         i = 0;
+    ping_info->ip_addr = NULL;
+    ping_info->socket_fd = 0;
+    ping_info->v_opt = 0;
+    ping_info->help_opt = 0;
+}
 
-    CheckValidOpt(argv, ping_info);
-    CheckHelpOpt(argv, ping_info);
-    CheckValidHost(argv, ping_info);
-   
-    while (argv[i]){
-        if (argv[i][0] == '-'){
-
-        }
-
-        else {
-            is_ip = inet_pton(AF_INET, )
-        }
-
-    }
+void    Destroy(PingInfo *ping_info)
+{
+    if (ping_info->ip_addr != NULL)
+        free(ping_info->ip_addr);
     
-    return;
+    free(ping_info);
+}
+
+void    Calc_Checksum(struct icmp *icmp_package, int len)
+{
+    return
 }
