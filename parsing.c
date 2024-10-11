@@ -40,7 +40,6 @@ void    CheckHelpOpt(PingInfo *ping_info){
 void    CheckValidHost(char **argv, PingInfo *ping_info)
 {
     int                 i = 1;
-    char                *hostname = NULL;
     struct hostent      *hostend_struct;
     struct sockaddr_in  ipv4_struct;
     struct sockaddr_in  ipv6_struct;
@@ -49,24 +48,20 @@ void    CheckValidHost(char **argv, PingInfo *ping_info)
     {
         if (argv[i][0] != '-')
         {
-            hostname = strdup(argv[i]);
+            ping_info->hostname = strdup(argv[i]);
             break ;
         }
     }
 
-    hostend_struct = gethostbyname(hostname);
+    hostend_struct = gethostbyname(ping_info->hostname);
     if (hostend_struct == NULL)
-        ping_info->ip_addr = strdup(hostname);
+        ping_info->ip_addr = strdup(ping_info->hostname);
     else
         ping_info->ip_addr = inet_ntoa(*(struct in_addr *)hostend_struct->h_addr);
 
     if (inet_pton(AF_INET, ping_info->ip_addr, &(ipv4_struct.sin_addr)) != 1 
         && inet_pton(AF_INET6, ping_info->ip_addr, &(ipv6_struct.sin_addr)) != 1)
-    {
-        free (hostname);
         ExitError("BAD_IP_ERROR", ping_info->ip_addr, '\0', ping_info);
-    }
-    free (hostname);
 }
 
 void    CheckArguments(int argc, char **argv, PingInfo *ping_info)

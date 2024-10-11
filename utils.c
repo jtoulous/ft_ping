@@ -28,21 +28,51 @@ void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_inf
 
 void    Init(PingInfo *ping_info)
 {
+    ping_info->hostname = NULL;
     ping_info->ip_addr = NULL;
     ping_info->socket_fd = 0;
     ping_info->v_opt = 0;
     ping_info->help_opt = 0;
+    ping_info->total_runtime = 0;
 }
 
 void    Destroy(PingInfo *ping_info)
 {
+    if (ping_info->hostname != NULL)
+        free(ping_info->hostname);
     if (ping_info->ip_addr != NULL)
         free(ping_info->ip_addr);
-    
-    free(ping_info);
 }
 
-void    Calc_Checksum(struct icmp *icmp_package, int len)
+unsigned short    Calc_Checksum(void *icmp_package, int len)
 {
-    return
+    unsigned short  *buff;
+    unsigned short  res;
+    unsigned int    sum;
+
+    buff = icmp_package;
+    sum = 0;
+
+    while (len > 1)
+    {
+        sum += *buff;
+        buff++;
+        len -= 2;
+    }
+    if (len == 1)
+        sum += *(unsigned char *)buff;
+
+    sum = (sum >> 16) + (sum & 0xFFFF);
+    sum += (sum >> 16);
+    res = ~sum;
+
+    return (res);
+}
+
+long    Get_Time(void)
+{
+    struct timeval  tv;
+
+    gettimeofday(&tv, NULL);
+    return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }

@@ -14,20 +14,24 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <netinet/ip_icmp.h>
+#include <sys/time.h>
 
 typedef struct  s_struct 
 {
+    char    *hostname;
     char    *ip_addr;
     int     socket_fd;
     int     v_opt;
     int     help_opt;
+    long    total_runtime;
 }   PingInfo;
 
-void    CheckArguments(int argc, char **argv, PingInfo *ping_info);
-void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info);
-void    Init(PingInfo *ping_info);
-void    Destroy(PingInfo *ping_info);
-void    Calc_Checksum(struct icmp *icmp_package, int len);
+void                CheckArguments(int argc, char **argv, PingInfo *ping_info);
+void                ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info);
+void                Init(PingInfo *ping_info);
+void                Destroy(PingInfo *ping_info);
+unsigned short      Calc_Checksum(void *icmp_package, int len);
+long                Get_Time(void);
 
 
 #endif
