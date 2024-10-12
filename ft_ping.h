@@ -15,6 +15,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <sys/time.h>
+#include <netinet/ip.h>
 
 typedef struct  p_struct 
 {
@@ -40,8 +41,8 @@ void                CheckArguments(int argc, char **argv, PingInfo *ping_info);
 void                ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info);
 void                Init(PingInfo *ping_info);
 void                Destroy(PingInfo *ping_info);
-unsigned short      Calc_Checksum(void *icmp_package, int len);
+unsigned short      Calc_Checksum(IcmpPack *icmp_package, int len);
 long                Get_Time(void);
-
+void                PrintRecvInfo(long ping_time, int bytes_recv, char *buffer);
 
 #endif

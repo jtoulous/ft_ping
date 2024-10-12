@@ -22,6 +22,24 @@ void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_inf
         exit_code = 1;
     }
 
+    else if (strcmp(type, "SOCKET_ERROR") == 0)
+    {
+        printf("ping: socket: Operation not permitted\n");
+        exit_code = 2;
+    }
+
+    else if (strcmp(type, "SENDTO_ERROR") == 0)
+    {
+        perror("ping: sendto failed\n");
+        exit_code = 1;
+    }
+
+    else if (strcmp(type, "RECV_ERROR") == 0)
+    {
+        perror("ping: recvfrom failed\n");
+        exit_code = 1;
+    }
+
     Destroy(ping_info);
     exit(exit_code);
 }
@@ -30,7 +48,7 @@ void    Init(PingInfo *ping_info)
 {
     ping_info->hostname = NULL;
     ping_info->ip_addr = NULL;
-    ping_info->socket_fd = 0;
+    ping_info->socket_fd = -1;
     ping_info->v_opt = 0;
     ping_info->help_opt = 0;
     ping_info->total_runtime = 0;
@@ -42,15 +60,18 @@ void    Destroy(PingInfo *ping_info)
         free(ping_info->hostname);
     if (ping_info->ip_addr != NULL)
         free(ping_info->ip_addr);
+    if (ping_info->socket_fd >= 0)
+        close(ping_info->socket_fd);
 }
 
-unsigned short    Calc_Checksum(void *icmp_package, int len)
+unsigned short    Calc_Checksum(IcmpPack *icmp_package, int len)
 {
     unsigned short  *buff;
     unsigned short  res;
     unsigned int    sum;
 
-    buff = icmp_package;
+    icmp_package->icmp_cksum = 0;
+    buff = (void *)icmp_package;
     sum = 0;
 
     while (len > 1)
@@ -76,3 +97,32 @@ long    Get_Time(void)
     gettimeofday(&tv, NULL);
     return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
+
+
+void    PrintRecvInfo(long ping_time, int bytes_recv, char *buffer)
+{
+    struct iphdr    *ip_header;
+    IcmpPack        *icmp_package;
+
+    ip_header = (struct iphdr *)buffer;
+    buffer += 20;
+    icmp_package = (IcmpPack *)buffer;
+
+
+    char    *ip_addr = inet_ntoa(*(struct in_addr *)&ip_header->saddr);
+    int     TTL = ip_header->ttl;
+//    char    *real_ip
+
+    printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%lu ms",
+            bytes_recv,
+            "your_daddy",
+            ip_addr,
+//            inet_ntoa(*(struct in_addr *)&ip_header->saddr),
+            icmp_package->icmp_seq,
+            TTL,
+//            ip_header->ttl,
+            ping_time
+        );
+}
+
+//64 bytes from par21s22-in-f3.1e100.net (142.250.178.131): icmp_seq=2 ttl=63 time=17.8 ms
