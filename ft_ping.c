@@ -5,7 +5,7 @@ void    Ping(PingInfo ping_info)
 {
     char                    buffer[1000];
     struct sockaddr_in      dest_addr;
-    struct icmp             icmp_package;
+    IcmpPack                icmp_package;
     socklen_t               addrlen;
 
     memset(&dest_addr, 0, sizeof(dest_addr));
@@ -27,7 +27,7 @@ void    Ping(PingInfo ping_info)
         exit(69);
 //        ExitError();
 
-    printf("PING %s (%s) 56(84) bytes od data.\n", ping_info.hostname, ping_info.ip_addr);
+    printf("PING %s (%s) %d(%d) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package));
     while (1)
     {
 //        long    start = Get_Time();
@@ -40,14 +40,15 @@ void    Ping(PingInfo ping_info)
         }
 
         int bytes_recv = recvfrom(ping_info.socket_fd, &buffer, sizeof(buffer), 0, (struct sockaddr *)&dest_addr, &addrlen);
-//        if(bytes_recv <= 0)
-//        {
-//            ExitError();
-//        }
-//        long    end = Get_Time();
-        printf("%d", bytes_recv);
-//        print"('%d bytes fro" ', bytes_recv, )
+        if(bytes_recv <= 0)
+        {
+            ExitError();
+        }
+        long    end = Get_Time();
+
+//        PrintRecvInfo(start, end, bytes_recv, icmp_package, dest_addr)
         sleep(1);
+        icmp_package.icmp_seq++;
     }
 }
 

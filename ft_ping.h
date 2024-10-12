@@ -4,6 +4,7 @@
 #define BAD_IP_ERROR ""
 #define NO_ARGUMENTS_ERROR "ping: usage error: Destination address required\n"
 #define HELP_MSG "Options:\n  <destination>      dns name or ip address\n  -v                 verbose output\n"
+#define ICMP_ECHO 8
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -13,10 +14,9 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
-#include <netinet/ip_icmp.h>
 #include <sys/time.h>
 
-typedef struct  s_struct 
+typedef struct  p_struct 
 {
     char    *hostname;
     char    *ip_addr;
@@ -25,6 +25,16 @@ typedef struct  s_struct
     int     help_opt;
     long    total_runtime;
 }   PingInfo;
+
+typedef struct i_struct
+{
+    uint8_t     icmp_type;
+    uint8_t     icmp_code;
+    uint16_t    icmp_cksum;
+    uint16_t    icmp_id;
+    uint16_t    icmp_seq;
+    char        data[56];
+}   IcmpPack;
 
 void                CheckArguments(int argc, char **argv, PingInfo *ping_info);
 void                ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info);
