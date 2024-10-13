@@ -90,39 +90,36 @@ unsigned short    Calc_Checksum(IcmpPack *icmp_package, int len)
     return (res);
 }
 
-long    Get_Time(void)
+long double    Get_Time(void)
 {
     struct timeval  tv;
+    long double          res;
 
     gettimeofday(&tv, NULL);
-    return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+    res = (tv.tv_sec * 1000.0f) + (tv.tv_usec / 1000.0f);
+    return (res);
 }
 
 
-void    PrintRecvInfo(long ping_time, int bytes_recv, char *buffer)
+void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
 {
     struct iphdr    *ip_header;
     IcmpPack        *icmp_package;
+    struct hostent  *host;
 
     ip_header = (struct iphdr *)buffer;
     buffer += 20;
     icmp_package = (IcmpPack *)buffer;
 
+//    ip_addr = inet_ntoa(*(struct in_addr *)&ip_header->saddr);
+    host = gethostbyaddr((const void *)&ip_header->saddr, sizeof(ip_header->saddr), AF_INET);
 
-    char    *ip_addr = inet_ntoa(*(struct in_addr *)&ip_header->saddr);
-    int     TTL = ip_header->ttl;
-//    char    *real_ip
-
-    printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%lu ms",
-            bytes_recv,
-            "your_daddy",
-            ip_addr,
-//            inet_ntoa(*(struct in_addr *)&ip_header->saddr),
+    printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1Lf ms\n",
+            bytes_recv - 20,
+            host->h_name,
+            inet_ntoa(*(struct in_addr *)&ip_header->saddr),
             icmp_package->icmp_seq,
-            TTL,
-//            ip_header->ttl,
+            ip_header->ttl,
             ping_time
         );
 }
-
-//64 bytes from par21s22-in-f3.1e100.net (142.250.178.131): icmp_seq=2 ttl=63 time=17.8 ms

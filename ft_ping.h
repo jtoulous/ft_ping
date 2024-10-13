@@ -42,7 +42,7 @@ void                ExitError(char *type, char *info_str, char info_char, PingIn
 void                Init(PingInfo *ping_info);
 void                Destroy(PingInfo *ping_info);
 unsigned short      Calc_Checksum(IcmpPack *icmp_package, int len);
-long                Get_Time(void);
-void                PrintRecvInfo(long ping_time, int bytes_recv, char *buffer);
+long double              Get_Time(void);
+void                PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer);
 
 #endif
