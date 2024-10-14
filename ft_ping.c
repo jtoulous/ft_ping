@@ -17,7 +17,7 @@ void    Ping(PingInfo ping_info)
     icmp_package.icmp_type = ICMP_ECHO;
     icmp_package.icmp_code = 0;
     icmp_package.icmp_id = getpid();
-    icmp_package.icmp_seq = 1;
+    icmp_package.icmp_seq = 0;
     icmp_package.icmp_cksum = 0;
 
     dest_addr.sin_family = AF_INET;
@@ -28,11 +28,14 @@ void    Ping(PingInfo ping_info)
         ExitError("SOCKET_ERROR", NULL, '\0', &ping_info);
 
     printf("PING %s (%s) %lu(%lu) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package) + 20);
+    
+//  SIGNAL FUNCTION TO ADD HERE
     while (1)
     {
         char    buffer[100];
         int     bytes_recv;
 
+        icmp_package.icmp_seq++;
         icmp_package.icmp_cksum = (uint16_t)Calc_Checksum(&icmp_package, sizeof(icmp_package));        
 
         send_time = Get_Time();
@@ -47,7 +50,6 @@ void    Ping(PingInfo ping_info)
         time = recv_time - send_time;
         PrintRecvInfo(time, bytes_recv, buffer);
         sleep(1);
-        icmp_package.icmp_seq++;
     }
 }
 

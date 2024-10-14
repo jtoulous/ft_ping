@@ -111,7 +111,6 @@ void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
     buffer += 20;
     icmp_package = (IcmpPack *)buffer;
 
-//    ip_addr = inet_ntoa(*(struct in_addr *)&ip_header->saddr);
     host = gethostbyaddr((const void *)&ip_header->saddr, sizeof(ip_header->saddr), AF_INET);
 
     printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1Lf ms\n",
