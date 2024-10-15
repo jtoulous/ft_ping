@@ -1,9 +1,10 @@
 #include "ft_ping.h"
 
-void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_info)
+void    ExitError(char *type, char *info_str, char info_char)
 {
     int exit_code = 69;
 
+    OpenStdout();
     if (strcmp(type, "BAD_OPT_ERROR") == 0)
     {
         printf("ping: invalid option -- %c\n\n%s\n", info_char, HELP_MSG);
@@ -40,28 +41,29 @@ void    ExitError(char *type, char *info_str, char info_char, PingInfo *ping_inf
         exit_code = 1;
     }
 
-    Destroy(ping_info);
+    Destroy();
     exit(exit_code);
 }
 
-void    Init(PingInfo *ping_info)
+void    Init(void)
 {
-    ping_info->hostname = NULL;
-    ping_info->ip_addr = NULL;
-    ping_info->socket_fd = -1;
-    ping_info->v_opt = 0;
-    ping_info->help_opt = 0;
-    ping_info->total_runtime = 0;
+    ping_info.hostname = NULL;
+    ping_info.ip_addr = NULL;
+    ping_info.socket_fd = -1;
+    ping_info.v_opt = 0;
+    ping_info.help_opt = 0;
+    ping_info.total_runtime = 0;
+    CloseStdout();
 }
 
-void    Destroy(PingInfo *ping_info)
+void    Destroy(void)
 {
-    if (ping_info->hostname != NULL)
-        free(ping_info->hostname);
-    if (ping_info->ip_addr != NULL)
-        free(ping_info->ip_addr);
-    if (ping_info->socket_fd >= 0)
-        close(ping_info->socket_fd);
+    if (ping_info.hostname != NULL)
+        free(ping_info.hostname);
+    if (ping_info.ip_addr != NULL)
+        free(ping_info.ip_addr);
+    if (ping_info.socket_fd >= 0)
+        close(ping_info.socket_fd);
 }
 
 unsigned short    Calc_Checksum(IcmpPack *icmp_package, int len)
@@ -101,11 +103,34 @@ long double    Get_Time(void)
 }
 
 
+void    Print_Sigquit(void)
+{
+//    OpenStdout();
+    printf("\nNique ta soeur\n");
+//        printf("%d/%d packets, %d%% loss", //min/avg/ewma/max = %lu/%lu/%lu/%lu ms\n", 
+//            ping_info.packets_sent,
+//            ping_info.packets_received,
+//            ((ping_info.packets_sent - ping_info.packets_received) / ping_info.packets_sent) * 100);
+//            69.69,
+//            69.69,
+//            69.69,
+//            69.69
+//        );
+//    CloseStdout();
+    Signals_State("Reset", "SIGQUIT");   
+}
+
 void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
 {
     struct iphdr    *ip_header;
     IcmpPack        *icmp_package;
     struct hostent  *host;
+
+    if(Signals_State("Check", "SIGINT") >= 1)
+        return;
+
+    if(Signals_State("Check", "SIGQUIT") >= 1)
+        Print_Sigquit();
 
     ip_header = (struct iphdr *)buffer;
     buffer += 20;
@@ -113,6 +138,7 @@ void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
 
     host = gethostbyaddr((const void *)&ip_header->saddr, sizeof(ip_header->saddr), AF_INET);
 
+//    OpenStdout();
     printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1Lf ms\n",
             bytes_recv - 20,
             host->h_name,
@@ -121,4 +147,15 @@ void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
             ip_header->ttl,
             ping_time
         );
+//    CloseStdout();
+}
+
+void    OpenStdout(void)
+{
+    freopen("/dev/tty", "w", stdout);
+}
+
+void    CloseStdout(void)
+{
+    fclose(stdout);
 }
