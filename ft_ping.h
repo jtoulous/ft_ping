@@ -17,6 +17,8 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <netinet/ip.h>
+#include <termios.h>
+#include <fcntl.h>
 
 typedef struct  p_struct 
 {
@@ -33,6 +35,7 @@ typedef struct  p_struct
 
     int     v_opt;
     int     help_opt;
+    int     ttl_opt;
 }   PingInfo;
 
 typedef struct i_struct
@@ -52,10 +55,13 @@ void                ExitError(char *type, char *info_str, char info_char);
 void                Init(void);
 void                Destroy(void);
 unsigned short      Calc_Checksum(IcmpPack *icmp_package, int len);
-long double         Get_Time(void);
-void                PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer);
+double                Get_Time(void);
+void                PrintRecvInfo(double ping_time, int bytes_recv, char *buffer);
 int                 Signals_State(char *action, char *signal);
-void                OpenStdout(void);
-void                CloseStdout(void);
+//void                Init_Signals(void);
+void                handle_signals(int sig);
+void                SetupSocket(void);
+void                SendPacket(IcmpPack icmp_package, struct sockaddr_in dest_addr);
+void                RecvPacket(char *buffer, struct sockaddr_in *dest_addr, int *bytes_recv);
 
 #endif

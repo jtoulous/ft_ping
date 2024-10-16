@@ -4,11 +4,28 @@ void    ExitError(char *type, char *info_str, char info_char)
 {
     int exit_code = 69;
 
-    OpenStdout();
     if (strcmp(type, "BAD_OPT_ERROR") == 0)
     {
         printf("ping: invalid option -- %c\n\n%s\n", info_char, HELP_MSG);
         exit_code = 2;
+    }
+
+    else if (strcmp(type, "BAD_ARG_ERROR") == 0)
+    {
+        printf("ping: invalid argument: '%s'\n", info_str);
+        exit_code = 1;
+    }
+
+    else if (strcmp(type, "NO_ARG_OPT") == 0)
+    {
+        printf("ping: option requires an argument -- '%c'\n\n%s\n", info_char, HELP_MSG);
+        exit_code = 2;
+    }
+
+    else if (strcmp(type, "INVALID_TTL_VAL") == 0)
+    {
+        printf("ping: invalid argument: '%s': out of range: 0 <= value <= 255\n", info_str);
+        exit_code = 1;
     }
 
     else if (strcmp(type, "BAD_IP_ERROR") == 0)
@@ -31,13 +48,25 @@ void    ExitError(char *type, char *info_str, char info_char)
 
     else if (strcmp(type, "SENDTO_ERROR") == 0)
     {
-        perror("ping: sendto failed\n");
+        printf("ping: sendto failed\n");
         exit_code = 1;
     }
 
     else if (strcmp(type, "RECV_ERROR") == 0)
     {
-        perror("ping: recvfrom failed\n");
+        printf("ping: recvfrom failed\n");
+        exit_code = 1;
+    }
+
+    else if (strcmp(type, "SIGACTION ERROR") == 0)
+    {
+        printf("ping: sigaction init failed\n");
+        exit_code = 1;
+    }
+
+    else if (strcmp(type, "SOCKET_OPT_ERROR") == 0)
+    {
+        printf("ping: setsockopt() failed\n");
         exit_code = 1;
     }
 
@@ -53,7 +82,7 @@ void    Init(void)
     ping_info.v_opt = 0;
     ping_info.help_opt = 0;
     ping_info.total_runtime = 0;
-    CloseStdout();
+    ping_info.ttl_opt = -1;
 }
 
 void    Destroy(void)
@@ -92,20 +121,19 @@ unsigned short    Calc_Checksum(IcmpPack *icmp_package, int len)
     return (res);
 }
 
-long double    Get_Time(void)
+double    Get_Time(void)
 {
-    struct timeval  tv;
-    long double          res;
+    struct  timeval  tv;
+    double        res;
 
     gettimeofday(&tv, NULL);
-    res = (tv.tv_sec * 1000.0f) + (tv.tv_usec / 1000.0f);
+    res = (tv.tv_sec * 1000.0) + (tv.tv_usec / 1000.0);
     return (res);
 }
 
 
 void    Print_Sigquit(void)
 {
-//    OpenStdout();
     printf("\nNique ta soeur\n");
 //        printf("%d/%d packets, %d%% loss", //min/avg/ewma/max = %lu/%lu/%lu/%lu ms\n", 
 //            ping_info.packets_sent,
@@ -116,15 +144,13 @@ void    Print_Sigquit(void)
 //            69.69,
 //            69.69
 //        );
-//    CloseStdout();
     Signals_State("Reset", "SIGQUIT");   
 }
 
-void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
+void    PrintRecvInfo(double ping_time, int bytes_recv, char *buffer)
 {
     struct iphdr    *ip_header;
     IcmpPack        *icmp_package;
-    struct hostent  *host;
 
     if(Signals_State("Check", "SIGINT") >= 1)
         return;
@@ -136,26 +162,43 @@ void    PrintRecvInfo(long double ping_time, int bytes_recv, char *buffer)
     buffer += 20;
     icmp_package = (IcmpPack *)buffer;
 
-    host = gethostbyaddr((const void *)&ip_header->saddr, sizeof(ip_header->saddr), AF_INET);
-
-//    OpenStdout();
-    printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1Lf ms\n",
+    printf("%d bytes from %s (%s): icmp_seq=%d ttl=%d time=%.1f ms\n",
             bytes_recv - 20,
-            host->h_name,
+            ping_info.hostname,
             inet_ntoa(*(struct in_addr *)&ip_header->saddr),
             icmp_package->icmp_seq,
             ip_header->ttl,
             ping_time
         );
-//    CloseStdout();
 }
 
-void    OpenStdout(void)
+
+void SetupSocket(void)
 {
-    freopen("/dev/tty", "w", stdout);
+    ping_info.socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (ping_info.socket_fd < 0)
+        ExitError("SOCKET_ERROR", NULL, '\0');
+
+    if (ping_info.ttl_opt != -1)
+        if (setsockopt(ping_info.socket_fd, IPPROTO_IP, IP_TTL, &ping_info.ttl_opt, sizeof(ping_info.ttl_opt)) < 0)
+            ExitError("SOCKET_OPT_ERROR", NULL, '\0');
 }
 
-void    CloseStdout(void)
+void    SendPacket(IcmpPack icmp_package, struct sockaddr_in dest_addr)
 {
-    fclose(stdout);
+    if (sendto(ping_info.socket_fd, &icmp_package, sizeof(icmp_package), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) <= 0)
+        ExitError("SENDTO_ERROR", NULL, '\0');
+    ping_info.packets_sent++;
+}
+
+void    RecvPacket(char *buffer, struct sockaddr_in *dest_addr, int *bytes_recv)
+{
+    socklen_t   addrlen;
+
+    addrlen = sizeof(dest_addr);
+    *bytes_recv = recvfrom(ping_info.socket_fd, buffer, sizeof(buffer), 0, (struct sockaddr *)dest_addr, &addrlen);
+    if(*bytes_recv <= 0)
+        ExitError("RECV_ERROR", NULL, '\0');
+    else
+        ping_info.packets_received++;
 }

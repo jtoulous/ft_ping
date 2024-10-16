@@ -1,6 +1,34 @@
 #include "ft_ping.h"
 
-void    CheckValidOpt(char **argv)
+void    CheckTTLOpt(int *i, int *j, int argc, char **argv)
+{
+    int     ttl;
+
+    if (argv[*i][*j + 1] != '\0') //ping: invalid argument: 'argv[i][*j]'
+    {    
+        char *tmp = &argv[*i][*j + 1];
+        ExitError("BAD_ARG_ERROR", tmp, '\0');
+    }
+    if (*i == argc - 1) //ping: option requires an argument -- 't' + print help
+        ExitError("NO_ARG_OPT", NULL, 't');
+
+    if (strcmp(argv[*i + 1], "0") == 0)
+        ttl = 0;
+    else
+    {
+        ttl = atoi(argv[*i + 1]);
+        if (ttl == 0)
+            ExitError("BAD_ARG_ERROR", argv[*i + 1], '\0'); //ping: invalid argument: 'argv[*i + 1]'
+
+        if (ttl > 255 || ttl < 0) //ping: invalid argument: '256': out of range: 0 <= value <= 255
+            ExitError("INVALID_TTL_VAL", argv[*i + 1], '\0');
+
+    }
+    ping_info.ttl_opt = ttl;
+    *i += 1;
+}
+
+void    CheckValidOpt(int argc, char **argv)
 {
     int i = 1;
     ping_info.v_opt = 0;
@@ -18,6 +46,12 @@ void    CheckValidOpt(char **argv)
                 
                 else if (argv[i][j] == '?')
                     ping_info.help_opt = 1;
+
+                else if (argv[i][j] == 't')
+                {
+                    CheckTTLOpt(&i, &j, argc, argv);
+                    break;
+                }
 
                 else
                     ExitError("BAD_OPT_ERROR", NULL, argv[i][j]);
@@ -69,7 +103,7 @@ void    CheckArguments(int argc, char **argv)
     if (argc <= 1)
         ExitError("NO_ARGUMENTS_ERROR", NULL, '\0');
 
-    CheckValidOpt(argv);
+    CheckValidOpt(argc, argv);
     CheckHelpOpt();
     CheckValidHost(argv);
 }
