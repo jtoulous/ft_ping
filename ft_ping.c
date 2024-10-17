@@ -54,7 +54,6 @@ void    Ping(void)
     IcmpPack                icmp_package;
     long double             send_time;
     long double             recv_time;
-//    socklen_t               addrlen = sizeof(dest_addr);
     
     memset(&dest_addr, 0, sizeof(dest_addr));
     memset(&icmp_package, 0, sizeof(icmp_package));
@@ -99,7 +98,7 @@ int main(int argc, char **argv)
 {
     Init();
     CheckArguments(argc, argv);
-    Ping();
+//    Ping();
     Destroy();
     return 0;
 }
