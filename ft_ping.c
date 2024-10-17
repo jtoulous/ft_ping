@@ -54,7 +54,8 @@ void    Ping(void)
     IcmpPack                icmp_package;
     long double             send_time;
     long double             recv_time;
-
+//    socklen_t               addrlen = sizeof(dest_addr);
+    
     memset(&dest_addr, 0, sizeof(dest_addr));
     memset(&icmp_package, 0, sizeof(icmp_package));
 
@@ -75,21 +76,22 @@ void    Ping(void)
     printf("PING %s (%s) %lu(%lu) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package) + 20);    
     while (Signals_State("Check", "SIGINT") < 1)
     {
-        char    buffer[100];
-        int     bytes_recv;
+        char                    buffer[100];
+        int                     bytes_recv;
+        struct sockaddr_in      recv_addr;
 
         icmp_package.icmp_seq++;
         icmp_package.icmp_cksum = (uint16_t)Calc_Checksum(&icmp_package, sizeof(icmp_package));        
 
         send_time = Get_Time();
         SendPacket(icmp_package, dest_addr);
-        RecvPacket(buffer, &dest_addr, &bytes_recv);
+        RecvPacket(buffer, sizeof(buffer), &recv_addr, &bytes_recv);
         recv_time = Get_Time();
 
         PrintRecvInfo(recv_time - send_time, bytes_recv, buffer);
         sleep(1);
     }
-//    PrintEndingResults();
+    PrintEndingResults();
 }
 
 

@@ -1,12 +1,12 @@
 NAME = ft_ping
-SRC = ft_ping.c utils.c parsing.c
+SRC = ft_ping.c utils/parsing.c utils/logs.c utils/tools.c utils/errors.c
 OBJ = $(SRC:.c=.o)
 CFLAGS = -Wall -Wextra -Werror -g
 
 all: $(NAME)
 
 $(NAME): $(OBJ)
-	@clang $(OBJ) -o $(NAME)
+	@clang $(OBJ) -o $(NAME) -lm
 
 clean:
 	@rm -f $(OBJ)

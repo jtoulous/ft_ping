@@ -1,4 +1,4 @@
-#include "ft_ping.h"
+#include "../ft_ping.h"
 
 void    CheckTTLOpt(int *i, int *j, int argc, char **argv)
 {

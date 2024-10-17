@@ -17,21 +17,23 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <netinet/ip.h>
-#include <termios.h>
 #include <fcntl.h>
+#include <math.h>
 
 typedef struct  p_struct 
 {
     char    *hostname;
     char    *ip_addr;
     int     socket_fd;
-    long    total_runtime;
     int     packets_sent;
     int     packets_received;
-    long    min_time;
-    long    max_time;
-    long    avg_time;
-    long    ewma;
+    double    start_time;
+    double    min_time;
+    double    max_time;
+    double    avg_time;
+    double    squares_sum;
+    double    mdev;
+    double    ewma;
 
     int     v_opt;
     int     help_opt;
@@ -62,6 +64,8 @@ int                 Signals_State(char *action, char *signal);
 void                handle_signals(int sig);
 void                SetupSocket(void);
 void                SendPacket(IcmpPack icmp_package, struct sockaddr_in dest_addr);
-void                RecvPacket(char *buffer, struct sockaddr_in *dest_addr, int *bytes_recv);
+void                RecvPacket(char *buffer, int buffer_size, struct sockaddr_in *dest_addr, int *bytes_recv);
+void                PrintEndingResults(void);
+void                UpdatePingInfo(double ping_time);
 
 #endif
