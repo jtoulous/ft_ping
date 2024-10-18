@@ -72,7 +72,10 @@ void    Ping(void)
     signal(SIGINT, handle_signals);
     signal(SIGQUIT, handle_signals);
 
-    printf("PING %s (%s) %lu(%lu) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package) + 20);    
+//    if (ping_info.v_opt == 1)
+//        PrintVopt();
+
+    PrintStart(icmp_package);
     while (Signals_State("Check", "SIGINT") < 1)
     {
         char                    buffer[100];

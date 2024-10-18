@@ -62,14 +62,16 @@ void                Init(void);
 void                Destroy(void);
 unsigned short      Calc_Checksum(IcmpPack *icmp_package, int len);
 double              Get_Time(void);
-void                PrintRecvInfo(double ping_time, int bytes_recv, char *buffer);
 int                 Signals_State(char *action, char *signal);
 void                handle_signals(int sig);
 void                SetupSocket(void);
 void                SendPacket(IcmpPack icmp_package, struct sockaddr_in dest_addr);
 void                RecvPacket(char *buffer, int buffer_size, struct sockaddr_in *dest_addr, int *bytes_recv);
-void                PrintEndingResults(void);
 void                UpdatePingInfo(double ping_time);
 char                *DNS_lookup(char *hostname);
+
+void                PrintStart(IcmpPack icmp_package)
+void                PrintEndingResults(void);
+void                PrintRecvInfo(double ping_time, int bytes_recv, char *buffer);
 
 #endif

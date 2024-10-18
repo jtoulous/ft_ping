@@ -94,3 +94,13 @@ void    PrintEndingResults(void)
         );
     }
 }
+
+void    PrintStart(IcmpPack icmp_package)
+{
+    printf("PING %s (%s) %lu(%lu) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package) + 20);
+}
+
+//void    PrintVopt()
+//{
+//    
+//}
