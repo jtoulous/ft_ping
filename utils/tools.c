@@ -116,3 +116,35 @@ void    UpdatePingInfo(double ping_time)
         ping_info.ewma = 0.1 * ping_time + (1 - 0.1) * ping_info.ewma;
     }
 }
+
+char    *DNS_lookup(char *hostname)
+{
+    char            ip[INET_ADDRSTRLEN];
+    unsigned char   response[NS_PACKETSZ];
+    int             response_len;
+    ns_msg          handle;
+    int             answer_count;
+
+    response_len = res_query(hostname, C_IN, T_A, response, sizeof(response));
+    if (response_len < 0)
+        return (NULL);
+
+    if (ns_initparse(response, response_len, &handle) < 0)
+        return (NULL);
+    
+    answer_count = ns_msg_count(handle, ns_s_an);
+
+    for (int i = 0; i < answer_count; i++)
+    {
+        ns_rr  rr;
+        if (ns_parserr(&handle, ns_s_an, i, &rr) < 0)
+            return (NULL);
+
+        if (ns_rr_type(rr) == T_A)
+        {
+            inet_ntop(AF_INET, ns_rr_rdata(rr), ip, sizeof(ip));
+            return strdup(ip);
+        }
+    }
+    return (NULL);
+}
