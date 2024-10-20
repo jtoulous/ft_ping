@@ -72,8 +72,8 @@ void    Ping(void)
     signal(SIGINT, handle_signals);
     signal(SIGQUIT, handle_signals);
 
-//    if (ping_info.v_opt == 1)
-//        PrintVopt();
+    if (ping_info.v_opt == 1)
+        PrintVopt();
 
     PrintStart(icmp_package);
     while (Signals_State("Check", "SIGINT") < 1)

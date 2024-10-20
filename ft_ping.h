@@ -28,7 +28,15 @@ typedef struct  p_struct
 {
     char    *hostname;
     char    *ip_addr;
-    int     socket_fd;
+    
+    int     socket4_fd;
+    char    *socket4_type;
+    char    *socket4_family;
+    
+    int     socket6_fd;
+    char    *socket6_type;
+    char    *socket6_family;
+
     int     packets_sent;
     int     packets_received;
     double    start_time;
@@ -70,8 +78,9 @@ void                RecvPacket(char *buffer, int buffer_size, struct sockaddr_in
 void                UpdatePingInfo(double ping_time);
 char                *DNS_lookup(char *hostname);
 
-void                PrintStart(IcmpPack icmp_package)
+void                PrintStart(IcmpPack icmp_package);
 void                PrintEndingResults(void);
 void                PrintRecvInfo(double ping_time, int bytes_recv, char *buffer);
+void                PrintVopt(void);
 
 #endif

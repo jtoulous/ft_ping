@@ -4,11 +4,18 @@ void    Init(void)
 {
     ping_info.hostname = NULL;
     ping_info.ip_addr = NULL;
-    ping_info.socket_fd = -1;
+    ping_info.socket4_fd = -1;
+    ping_info.socket4_type = strdup("SOCK_RAW");
+    ping_info.socket4_family = strdup("AF_INET");
+
+    ping_info.socket6_fd = -1;
+    ping_info.socket6_type = NULL;
+    ping_info.socket6_family = NULL;
+    
     ping_info.v_opt = 0;
     ping_info.help_opt = 0;
-    ping_info.start_time = Get_Time();
     ping_info.ttl_opt = -1;
+    ping_info.start_time = Get_Time();
     ping_info.packets_sent = 0;
     ping_info.packets_received = 0;
     ping_info.min_time = 0;
@@ -22,10 +29,27 @@ void    Destroy(void)
 {
     if (ping_info.hostname != NULL)
         free(ping_info.hostname);
+    
     if (ping_info.ip_addr != NULL)
         free(ping_info.ip_addr);
-    if (ping_info.socket_fd >= 0)
-        close(ping_info.socket_fd);
+    
+    if (ping_info.socket4_type != NULL)
+        free(ping_info.socket4_type);
+    
+    if (ping_info.socket6_type != NULL)
+        free(ping_info.socket6_type);
+    
+    if (ping_info.socket4_family != NULL)
+        free(ping_info.socket4_family);
+
+    if (ping_info.socket6_family != NULL)
+        free(ping_info.socket4_family);
+
+    if (ping_info.socket4_fd >= 0)
+        close(ping_info.socket4_fd);
+    
+    if (ping_info.socket6_fd >= 0)
+        close(ping_info.socket6_fd);
 }
 
 unsigned short    Calc_Checksum(IcmpPack *icmp_package, int len)
@@ -66,18 +90,18 @@ double    Get_Time(void)
 
 void SetupSocket(void)
 {
-    ping_info.socket_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (ping_info.socket_fd < 0)
+    ping_info.socket4_fd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (ping_info.socket4_fd < 0)
         ExitError("SOCKET_ERROR", NULL, '\0');
 
     if (ping_info.ttl_opt != -1)
-        if (setsockopt(ping_info.socket_fd, IPPROTO_IP, IP_TTL, &ping_info.ttl_opt, sizeof(ping_info.ttl_opt)) < 0)
+        if (setsockopt(ping_info.socket4_fd, IPPROTO_IP, IP_TTL, &ping_info.ttl_opt, sizeof(ping_info.ttl_opt)) < 0)
             ExitError("SOCKET_OPT_ERROR", NULL, '\0');
 }
 
 void    SendPacket(IcmpPack icmp_package, struct sockaddr_in dest_addr)
 {
-    if (sendto(ping_info.socket_fd, &icmp_package, sizeof(icmp_package), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) <= 0)
+    if (sendto(ping_info.socket4_fd, &icmp_package, sizeof(icmp_package), 0, (struct sockaddr *)&dest_addr, sizeof(dest_addr)) <= 0)
         ExitError("SENDTO_ERROR", NULL, '\0');
     ping_info.packets_sent++;
 }
@@ -87,7 +111,7 @@ void    RecvPacket(char *buffer, int buffer_size, struct sockaddr_in *dest_addr,
     socklen_t   addrlen;
 
     addrlen = sizeof(*dest_addr);
-    *bytes_recv = recvfrom(ping_info.socket_fd, buffer, buffer_size, 0, (struct sockaddr *)dest_addr, &addrlen);
+    *bytes_recv = recvfrom(ping_info.socket4_fd, buffer, buffer_size, 0, (struct sockaddr *)dest_addr, &addrlen);
     if(*bytes_recv <= 0)
         ExitError("RECV_ERROR", NULL, '\0');
 }

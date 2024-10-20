@@ -100,7 +100,14 @@ void    PrintStart(IcmpPack icmp_package)
     printf("PING %s (%s) %lu(%lu) bytes of data.\n", ping_info.hostname, ping_info.ip_addr, sizeof(icmp_package.data), sizeof(icmp_package) + 20);
 }
 
-//void    PrintVopt()
-//{
-//    
-//}
+void    PrintVopt(void)
+{
+    printf("ping: sock4.fd: %d (socktype: %s), sock6.fd: %d (socktype: %s), hints.ai_family: AF_UNSPEC\n\nai->ai_family: %s, ai->ai_canonname: '%s'\n",
+            ping_info.socket4_fd,
+            ping_info.socket4_type,
+            ping_info.socket6_fd,
+            ping_info.socket6_type,
+            ping_info.socket4_family,
+            ping_info.hostname
+        );
+}
