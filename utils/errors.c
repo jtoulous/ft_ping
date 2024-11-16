@@ -70,6 +70,12 @@ void    ExitError(char *type, char *info_str, char info_char)
         exit_code = 1;
     }
 
+    else if (strcmp(type, "TEMP_FAILURE") == 0)
+    {
+        printf("ping: %s: Temporary failure in name resolution\n", info_str);
+        exit_code = 2;
+    }
+
     Destroy();
     exit(exit_code);
 }

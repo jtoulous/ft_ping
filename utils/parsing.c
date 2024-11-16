@@ -74,7 +74,6 @@ void    CheckHelpOpt(void){
 void    CheckValidHost(char **argv)
 {
     int                 i = 1;
-//    struct hostent      *hostend_struct;
     struct sockaddr_in  ipv4_struct;
     struct sockaddr_in  ipv6_struct;
 
@@ -87,12 +86,14 @@ void    CheckValidHost(char **argv)
         }
     }
 
-//    hostend_struct = gethostbyname(ping_info.hostname);
-    ping_info.ip_addr = DNS_lookup(ping_info.hostname);
-    if (ping_info.ip_addr == NULL)
+    if (IsIp(ping_info.hostname) == 0)
+    {
+        ping_info.ip_addr = DNS_lookup(ping_info.hostname);
+        if (ping_info.ip_addr == NULL)
+            ExitError("TEMP_FAILURE", ping_info.hostname, '\0');
+    }
+    else
         ping_info.ip_addr = strdup(ping_info.hostname);
-//    else
-//        ping_info.ip_addr = strdup(inet_ntoa(*(struct in_addr *)hostend_struct->h_addr));
 
     if (inet_pton(AF_INET, ping_info.ip_addr, &(ipv4_struct.sin_addr)) != 1 
         && inet_pton(AF_INET6, ping_info.ip_addr, &(ipv6_struct.sin_addr)) != 1)
@@ -106,5 +107,14 @@ void    CheckArguments(int argc, char **argv)
 
     CheckValidOpt(argc, argv);
     CheckHelpOpt();
+    SetupSocket();
+    
+    if (ping_info.v_opt == 1)
+        PrintVopt_part1();
+
     CheckValidHost(argv);
+
+    if (ping_info.v_opt == 1)
+        PrintVopt_part2();
+
 }

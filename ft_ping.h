@@ -81,6 +81,8 @@ char                *DNS_lookup(char *hostname);
 void                PrintStart(IcmpPack icmp_package);
 void                PrintEndingResults(void);
 void                PrintRecvInfo(double ping_time, int bytes_recv, char *buffer);
-void                PrintVopt(void);
+void                PrintVopt_part1(void);
+void                PrintVopt_part2(void);
+int                 IsIp(char *str);
 
 #endif
