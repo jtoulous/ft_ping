@@ -17,7 +17,7 @@
 #include <arpa/inet.h>
 #include <sys/time.h>
 #include <netinet/ip.h>
-#include <fcntl.h>
+//#include <fcntl.h>
 #include <math.h>
 
 #include <resolv.h>

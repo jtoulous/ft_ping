@@ -84,6 +84,7 @@ void    CheckValidHost(char **argv)
             ping_info.hostname = strdup(argv[i]);
             break ;
         }
+        i++;
     }
 
     if (IsIp(ping_info.hostname) == 0)
